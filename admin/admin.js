@@ -127,8 +127,8 @@ function renderMenuEditor(container) {
                             <h3 class="font-bold text-lg text-white truncate w-3/4">${p.name}</h3>
                             <span class="text-yellow-400 font-mono font-bold">${parseFloat(p.price).toFixed(1)} DT</span>
                         </div>
-                        ${p.description ? `<p class="text-sm text-gray-300 mb-2 line-clamp-2">${p.description}</p>` : ''}
-                        ${p.sizes ? `<p class="text-xs text-gray-400 mb-3">S: ${p.sizes?.s || 0} | M: ${p.sizes?.m || 0} | L: ${p.sizes?.l || 0}</p>` : ''}
+                        ${p.description ? <p class="text-sm text-gray-300 mb-2 line-clamp-2">${p.description}</p> : ""}
+${p.sizes ? <p class="text-xs text-gray-400 mb-3">S: ${p.sizes?.s || 0} | M: ${p.sizes?.m || 0} | L: ${p.sizes?.l || 0}</p> : ""}
                         <div class="flex justify-between items-center mt-3">
                             <span class="text-xs bg-gray-700 px-2 py-1 rounded text-gray-300">${p.cat}</span>
                             <button onclick="window.toggleProductActive('${p.id}', ${p.active})" class="text-xs px-2 py-1 rounded font-bold cursor-pointer ${p.active ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'}">
