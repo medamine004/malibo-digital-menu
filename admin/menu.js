@@ -72,10 +72,15 @@ export function renderMenu(container) {
                     </div>
 
                     <div class="p-5">
-                        <div class="flex justify-between items-start mb-2">
-                            <h3 class="font-bold text-lg text-white leading-tight">${p.name}</h3>
-                            <span class="text-yellow-400 font-mono font-bold text-lg">${parseFloat(p.price).toFixed(1)} <span class="text-xs">DT</span></span>
+                        <h3 class="font-bold text-lg text-white leading-tight mb-2">${p.name}</h3>
+                        ${p.description ? `<p class="text-sm text-gray-300 mb-3">${p.description}</p>` : ''}
+                        ${p.sizes && (p.sizes.s || p.sizes.m || p.sizes.l) ? `
+                        <div class="flex gap-2 mb-3 flex-wrap">
+                            ${p.sizes.s ? `<button class="px-3 py-1 bg-gray-700 text-white rounded-lg hover:bg-gray-600 text-xs font-semibold transition">S - ${parseFloat(p.sizes.s).toFixed(1)} DT</button>` : ''}
+                            ${p.sizes.m ? `<button class="px-3 py-1 bg-gray-700 text-white rounded-lg hover:bg-gray-600 text-xs font-semibold transition">M - ${parseFloat(p.sizes.m).toFixed(1)} DT</button>` : ''}
+                            ${p.sizes.l ? `<button class="px-3 py-1 bg-gray-700 text-white rounded-lg hover:bg-gray-600 text-xs font-semibold transition">L - ${parseFloat(p.sizes.l).toFixed(1)} DT</button>` : ''}
                         </div>
+                        ` : `<span class="text-yellow-400 font-mono font-bold text-lg mb-3 block">${parseFloat(p.price).toFixed(1)} <span class="text-xs">DT</span></span>`}
                         <div class="flex justify-between items-center mt-4">
                             ${hiddenBadge}
                             ${!isHidden ? '<span></span>' : ''} 
