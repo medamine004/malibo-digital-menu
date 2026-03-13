@@ -121,6 +121,10 @@ window.openProductModal = async (id = null) => {
             document.getElementById('p-name').value = data.name;
             document.getElementById('p-price').value = data.price;
             document.getElementById('p-cat').value = data.category;
+            document.getElementById('p-description').value = data.description || '';
+            document.getElementById('p-size-s').value = data.sizes?.s || '';
+            document.getElementById('p-size-m').value = data.sizes?.m || '';
+            document.getElementById('p-size-l').value = data.sizes?.l || '';
             document.getElementById('p-current-img').value = data.img;
             document.getElementById('p-hidden-state').value = data.hidden || false;
             preview.src = data.img || 'https://placehold.co/100?text=No+Image';
@@ -184,6 +188,12 @@ async function handleSaveProduct(e) {
             name: document.getElementById('p-name').value.trim(),
             price: parseFloat(document.getElementById('p-price').value),
             category: document.getElementById('p-cat').value.trim(), // Catégorie libre
+            description: document.getElementById('p-description').value.trim(),
+            sizes: {
+                s: parseInt(document.getElementById('p-size-s').value) || 0,
+                m: parseInt(document.getElementById('p-size-m').value) || 0,
+                l: parseInt(document.getElementById('p-size-l').value) || 0
+            },
             img: imgUrl,
             // On conserve l'état hidden s'il existe, sinon false par défaut
             hidden: document.getElementById('p-hidden-state').value === 'true'
