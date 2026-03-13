@@ -5,6 +5,8 @@ import {
   updateDoc,
   deleteDoc,
   doc,
+  query,
+  orderBy,
   onSnapshot
 } from "../core/data.js";
 
