@@ -117,7 +117,7 @@ function renderMenuEditor(container) {
                 <div class="bg-gray-800 rounded-xl overflow-hidden border border-gray-700 group relative shadow-lg fade-in">
                     <img src="${p.img || 'https://placehold.co/300'}" class="w-full h-48 object-cover">
                     <div class="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition duration-300">
-                        <button onclick="window.openProductModal('${p.id}', '${p.name}', '${p.price}', '${p.cat}', '${p.img}')" class="bg-blue-600 text-white p-2 rounded shadow hover:bg-blue-500"><i class="fa-solid fa-pen"></i></button>
+                        <button onclick="window.openProductModal('${p.id}', '${p.name}', '${p.price}', '${p.category}', '${p.img}')" class="bg-blue-600 text-white p-2 rounded shadow hover:bg-blue-500"><i class="fa-solid fa-pen"></i></button>
                         <button onclick="window.deleteProduct('${p.id}')" class="bg-red-600 text-white p-2 rounded shadow hover:bg-red-500"><i class="fa-solid fa-trash"></i></button>
                     </div>
                     <div class="p-4">
@@ -126,7 +126,7 @@ function renderMenuEditor(container) {
                             <span class="text-yellow-400 font-mono font-bold">${parseFloat(p.price).toFixed(1)} DT</span>
                         </div>
                         <div class="flex justify-between items-center mt-3">
-                            <span class="text-xs bg-gray-700 px-2 py-1 rounded text-gray-300">${p.cat}</span>
+                            <span class="text-xs bg-gray-700 px-2 py-1 rounded text-gray-300">${p.category}</span>
                             <button onclick="window.toggleProductActive('${p.id}', ${p.active})" class="text-xs px-2 py-1 rounded font-bold cursor-pointer ${p.active ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'}">
                                 ${p.active ? 'ACTIF' : 'INACTIF'}
                             </button>
