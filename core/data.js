@@ -70,6 +70,7 @@ export {
   updateDoc,
   deleteDoc,
   doc,
+  getDoc,
   query,
   orderBy,
   where,
