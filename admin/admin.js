@@ -167,6 +167,8 @@ window.openProductModal = (id = '', name = '', price = '', cat = 'Plats', img = 
                 
                 <div><label class="text-xs text-gray-400">Nom</label><input type="text" id="p-name" value="${name}" class="w-full bg-gray-800 border-gray-700 rounded p-3 text-white focus:border-yellow-500 outline-none" required></div>
                 
+                <div><label class="text-xs text-gray-400">Description</label><textarea id="p-description" placeholder="Description du produit..." class="w-full bg-gray-800 border border-gray-700 rounded p-3 text-white focus:border-yellow-500 outline-none" rows="3"></textarea></div>
+                
                 <div class="grid grid-cols-2 gap-4">
                     <div><label class="text-xs text-gray-400">Prix</label><input type="number" step="0.5" id="p-price" value="${price}" class="w-full bg-gray-800 border-gray-700 rounded p-3 text-white focus:border-yellow-500 outline-none" required></div>
                     <div><label class="text-xs text-gray-400">Catégorie</label>
@@ -174,9 +176,17 @@ window.openProductModal = (id = '', name = '', price = '', cat = 'Plats', img = 
   type="text"
   id="p-cat"
   value="${cat}"
-  placeholder="Ex: Pizzas, Vegan, Spécialité maison..."
+  placeholder="Ex: Pizzas, Vegan..."
   class="w-full bg-gray-800 border border-gray-700 rounded p-3 text-white focus:border-yellow-500 outline-none"
 />
+                    </div>
+                </div>
+
+                <div><label class="text-xs text-gray-400 block mb-2">Sizes Prices</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <div><input type="number" step="0.5" id="p-size-s" placeholder="S price" class="w-full bg-gray-800 border border-gray-700 rounded p-2 text-white focus:border-yellow-500 outline-none text-sm"></div>
+                        <div><input type="number" step="0.5" id="p-size-m" placeholder="M price" class="w-full bg-gray-800 border border-gray-700 rounded p-2 text-white focus:border-yellow-500 outline-none text-sm"></div>
+                        <div><input type="number" step="0.5" id="p-size-l" placeholder="L price" class="w-full bg-gray-800 border border-gray-700 rounded p-2 text-white focus:border-yellow-500 outline-none text-sm"></div>
                     </div>
                 </div>
 
@@ -213,7 +223,13 @@ window.openProductModal = (id = '', name = '', price = '', cat = 'Plats', img = 
             const data = {
                 name: document.getElementById('p-name').value,
                 price: parseFloat(document.getElementById('p-price').value),
+                description: document.getElementById('p-description').value.trim(),
                 cat: document.getElementById('p-cat').value,
+                sizes: {
+                    s: parseFloat(document.getElementById('p-size-s').value) || 0,
+                    m: parseFloat(document.getElementById('p-size-m').value) || 0,
+                    l: parseFloat(document.getElementById('p-size-l').value) || 0
+                },
                 img: imgUrl, active: true, stock: 50 // Stock par défaut
             };
 
