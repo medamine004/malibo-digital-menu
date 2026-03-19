@@ -68,6 +68,7 @@ function filter(c) {
 
 function renderMenu() {
     const grid = document.getElementById('menu-list');
+    console.log("ITEMS:", items);
     if (!grid) return;
 
     const items = menu.filter(p => p.cat === activeCat);
