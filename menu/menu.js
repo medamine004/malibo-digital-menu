@@ -1,5 +1,5 @@
 /**
- * MENU CLIENT (Firebase Edition) - Version corrigée
+ * MENU CLIENT (Firebase Edition) - avec sélection de taille
  */
 import { 
     db, collection, onSnapshot, addDoc, query, orderBy, serverTimestamp 
@@ -13,6 +13,7 @@ let menu = [];
 let categories = [];
 let activeCat = "";
 let cart = [];
+let pendingProduct = null; // Produit en attente de choix de taille
 
 document.addEventListener('DOMContentLoaded', () => {
     initRealTimeMenu();
@@ -29,20 +30,19 @@ document.addEventListener('DOMContentLoaded', () => {
         d.style.display = document.getElementById('opt-surplace').checked ? 'block' : 'none';
     };
     window.toggleTheme = () => document.documentElement.classList.toggle('dark');
-});
 
-// Helper pour vérifier si un produit a des tailles valides
-function hasSizes(item) {
-    if (!item.sizes || typeof item.sizes !== 'object') return false;
-    return 's' in item.sizes || 'm' in item.sizes || 'l' in item.sizes;
-}
+    // Écouteurs pour le modal de taille
+    document.getElementById('size-cancel')?.addEventListener('click', closeSizeModal);
+    document.getElementById('size-modal')?.addEventListener('click', e => {
+        if (e.target === e.currentTarget) closeSizeModal();
+    });
+});
 
 // --- 1. CHARGEMENT TEMPS RÉEL ---
 function initRealTimeMenu() {
     const q = query(collection(db, "products"), orderBy("name"));
     
     onSnapshot(q, (snapshot) => {
-        // Mapping + Filtrage (actifs uniquement)
         menu = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
                             .filter(p => p.active === true);
         
@@ -84,26 +84,23 @@ function renderMenu() {
 
     grid.innerHTML = items.map(item => `
         <div class="dish-card">
-            <img src="${item.img}" class="dish-img" loading="lazy" onerror="this.src='${PLACEHOLDER_IMG}'">
+            <img src="${item.img || PLACEHOLDER_IMG}" class="dish-img" loading="lazy" onerror="this.src='${PLACEHOLDER_IMG}'">
             <div class="dish-content">
                 <div>
                     <div class="dish-title">${item.name}</div>
                     <div class="dish-desc">${item.description || ''}</div>
 
                     ${hasSizes(item) ? `
-                    <div class="dish-sizes" style="margin-top:8px;font-size:0.85rem;">
-                        <div style="color:#666;">
-                            Tailles : 
-                            ${item.sizes?.s ? `<span style="margin-right:12px;">S : ${Number(item.sizes.s).toFixed(1)} DT</span>` : ''}
-                            ${item.sizes?.m ? `<span style="margin-right:12px;">M : ${Number(item.sizes.m).toFixed(1)} DT</span>` : ''}
-                            ${item.sizes?.l ? `<span>L : ${Number(item.sizes.l).toFixed(1)} DT</span>` : ''}
-                        </div>
+                    <div class="dish-sizes">
+                        ${item.sizes?.s ? `<span class="size-badge">S : ${Number(item.sizes.s).toFixed(1)} DT</span>` : ''}
+                        ${item.sizes?.m ? `<span class="size-badge">M : ${Number(item.sizes.m).toFixed(1)} DT</span>` : ''}
+                        ${item.sizes?.l ? `<span class="size-badge">L : ${Number(item.sizes.l).toFixed(1)} DT</span>` : ''}
                     </div>
                     ` : ''}
 
                 </div>
                 <div class="dish-footer">
-                    <div class="dish-price">${Number(item.price).toFixed(1)} DT</div>
+                    <div class="dish-price">${Number(item.price || 0).toFixed(1)} DT</div>
                     <button class="add-btn" onclick="addToCart('${item.id}')">
                         <i class="fas fa-plus"></i>
                     </button>
@@ -113,15 +110,84 @@ function renderMenu() {
     `).join('');
 }
 
-// --- 3. PANIER ---
+function hasSizes(item) {
+    return item.sizes && (item.sizes.s != null || item.sizes.m != null || item.sizes.l != null);
+}
+
+// --- 3. PANIER & SÉLECTION TAILLE ---
 function addToCart(id) {
     const product = menu.find(p => p.id === id);
     if (!product) return;
-    const existing = cart.find(i => i.id === id);
-    if (existing) existing.qty++;
-    else cart.push({...product, qty: 1});
+
+    if (hasSizes(product)) {
+        showSizeSelector(product);
+    } else {
+        // Produit sans taille → ajout direct
+        const existing = cart.find(i => i.id === id);
+        if (existing) existing.qty++;
+        else cart.push({...product, qty: 1});
+        updateCart();
+        showToast(`${product.name} ajouté ! 🛒`);
+    }
+}
+
+function showSizeSelector(product) {
+    pendingProduct = product;
+
+    document.getElementById('size-modal-title').textContent = `Choisir une taille pour ${product.name}`;
+    
+    const container = document.getElementById('size-options');
+    container.innerHTML = '';
+
+    const sizes = [
+        { key: 's', label: 'Small (S)' },
+        { key: 'm', label: 'Medium (M)' },
+        { key: 'l', label: 'Large (L)' }
+    ];
+
+    sizes.forEach(({key, label}) => {
+        if (product.sizes?.[key] != null) {
+            const price = Number(product.sizes[key]).toFixed(1);
+            const btn = document.createElement('button');
+            btn.className = 'size-btn';
+            btn.textContent = `${label} — ${price} DT`;
+            btn.onclick = () => confirmSize(key);
+            container.appendChild(btn);
+        }
+    });
+
+    const overlay = document.getElementById('size-modal');
+    overlay.classList.add('show');
+}
+
+function confirmSize(selectedKey) {
+    if (!pendingProduct) return;
+
+    const price = Number(pendingProduct.sizes[selectedKey]);
+    const cartItem = {
+        ...pendingProduct,
+        selectedSize: selectedKey.toUpperCase(),
+        price: price,
+        qty: 1
+    };
+
+    const existing = cart.find(i => i.id === cartItem.id && i.selectedSize === cartItem.selectedSize);
+    if (existing) {
+        existing.qty++;
+    } else {
+        cart.push(cartItem);
+    }
+
     updateCart();
-    showToast(`${product.name} ajouté ! 🛒`);
+    showToast(`${pendingProduct.name} (${cartItem.selectedSize}) ajouté ! 🛒`);
+
+    closeSizeModal();
+    pendingProduct = null;
+}
+
+function closeSizeModal() {
+    const overlay = document.getElementById('size-modal');
+    overlay.classList.remove('show');
 }
 
 function modQty(id, delta) {
@@ -135,7 +201,10 @@ function modQty(id, delta) {
 function updateCart() {
     const count = cart.reduce((a, b) => a + b.qty, 0);
     const badge = document.getElementById('nav-badge');
-    if(badge) { badge.textContent = count; badge.classList.toggle('show', count > 0); }
+    if(badge) { 
+        badge.textContent = count; 
+        badge.classList.toggle('show', count > 0); 
+    }
     
     const container = document.getElementById('cart-items');
     let total = 0;
@@ -144,11 +213,12 @@ function updateCart() {
         `<div style="text-align:center;padding:2rem;color:#888">Panier vide</div>` : 
         cart.map(item => {
             total += item.price * item.qty;
+            const displayName = item.selectedSize ? `${item.name} (${item.selectedSize})` : item.name;
             return `
             <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #eee">
                 <div style="flex:1">
-                    <b>${item.name}</b><br>
-                    <small>${item.price} DT x ${item.qty}</small>
+                    <b>${displayName}</b><br>
+                    <small>${item.price.toFixed(1)} DT x ${item.qty}</small>
                 </div>
                 <div>
                     <button class="btn-qty" onclick="modQty('${item.id}', -1)">-</button> 
@@ -166,10 +236,13 @@ function updateCart() {
 async function order() {
     if (cart.length === 0) return showToast("Votre panier est vide !", "error");
 
-    const type = document.querySelector('input[name="orderType"]:checked').value;
-    const table = document.getElementById('table-num').value;
+    const type = document.querySelector('input[name="orderType"]:checked')?.value || "A Emporter";
+    const table = document.getElementById('table-num')?.value || '';
 
-    if (type === 'Sur Place' && !table) return alert("Veuillez indiquer votre table.");
+    if (type === 'Sur Place' && !table) {
+        alert("Veuillez indiquer votre numéro de table.");
+        return;
+    }
 
     const orderId = "CMD-" + Math.floor(1000 + Math.random() * 9000);
     const total = cart.reduce((a, b) => a + (b.price * b.qty), 0);
@@ -187,14 +260,17 @@ async function order() {
             status: 'pending'
         });
 
-        // WhatsApp
+        // WhatsApp message
         let msg = `🧾 *COMMANDE ${orderId}*\n🏷️ *${type}* ${table ? '('+table+')' : ''}\n────────────────\n`;
-        cart.forEach(i => msg += `▪️ ${i.qty}x ${i.name} (${(i.price*i.qty).toFixed(1)} DT)\n`);
+        cart.forEach(i => {
+            const displayName = i.selectedSize ? `${i.name} (${i.selectedSize})` : i.name;
+            msg += `▪️ ${i.qty}x ${displayName} (${(i.price * i.qty).toFixed(1)} DT)\n`;
+        });
         msg += `────────────────\n💰 *TOTAL : ${total.toFixed(1)} DT*`;
 
         cart = [];
         updateCart();
-        window.closeCart();
+        closeCart();
 
         setTimeout(() => {
             window.location.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
