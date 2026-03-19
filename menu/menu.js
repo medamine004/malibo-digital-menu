@@ -1,5 +1,5 @@
 /**
- * MENU CLIENT (Firebase Edition)
+ * MENU CLIENT (Firebase Edition) - Version corrigée
  */
 import { 
     db, collection, onSnapshot, addDoc, query, orderBy, serverTimestamp 
@@ -30,6 +30,12 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     window.toggleTheme = () => document.documentElement.classList.toggle('dark');
 });
+
+// Helper pour vérifier si un produit a des tailles valides
+function hasSizes(item) {
+    if (!item.sizes || typeof item.sizes !== 'object') return false;
+    return 's' in item.sizes || 'm' in item.sizes || 'l' in item.sizes;
+}
 
 // --- 1. CHARGEMENT TEMPS RÉEL ---
 function initRealTimeMenu() {
@@ -83,22 +89,21 @@ function renderMenu() {
                 <div>
                     <div class="dish-title">${item.name}</div>
                     <div class="dish-desc">${item.description || ''}</div>
-                    <div class="dish-category"><small>Catégorie: ${item.cat}</small></div>
 
-
-                    ${item.sizes?.s || item.sizes?.m || item.sizes?.L ? `
+                    ${hasSizes(item) ? `
                     <div class="dish-sizes" style="margin-top:8px;font-size:0.85rem;">
                         <div style="color:#666;">
-                            Tailles: 
-                            ${item.sizes?.s ? `<span style="margin-right:10px;">S: ${parseFloat(item.sizes.s).toFixed(1)} DT</span>` : ''}
-                            ${item.sizes?.m ? `<span style="margin-right:10px;">M: ${parseFloat(item.sizes.m).toFixed(1)} DT</span>` : ''}
-                            ${item.sizes?.L ? `<span>L: ${parseFloat(item.sizes.L).toFixed(1)} DT</span>` : ''}
+                            Tailles : 
+                            ${item.sizes?.s ? `<span style="margin-right:12px;">S : ${Number(item.sizes.s).toFixed(1)} DT</span>` : ''}
+                            ${item.sizes?.m ? `<span style="margin-right:12px;">M : ${Number(item.sizes.m).toFixed(1)} DT</span>` : ''}
+                            ${item.sizes?.l ? `<span>L : ${Number(item.sizes.l).toFixed(1)} DT</span>` : ''}
                         </div>
                     </div>
                     ` : ''}
+
                 </div>
                 <div class="dish-footer">
-                    <div class="dish-price">${parseFloat(item.price).toFixed(1)} DT</div>
+                    <div class="dish-price">${Number(item.price).toFixed(1)} DT</div>
                     <button class="add-btn" onclick="addToCart('${item.id}')">
                         <i class="fas fa-plus"></i>
                     </button>
